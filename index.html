@@ -2,245 +2,247 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+      name="description"
+      content="Buddhi Ashan MK - Postdoctoral Researcher in parallel and distributed computing, GPU programming, and geospatial polygon data processing."
     />
     <title>Profile | Buddhi Ashan MK</title>
-
-    <!-- Font Family -->
-
-    <!-- Link to Bootstrap CSS -->
-   
-    <link rel="icon" href="img/Profile/title.ico" type="image/icon type">
-
-    <link
-     rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-    />
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <!-- CSS -->
+    <link rel="icon" href="img/Profile/title.ico" type="image/x-icon" />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles/theme.css" />
     <link rel="stylesheet" href="styles/profile.css" />
     <link rel="stylesheet" href="styles/nav.css" />
   </head>
-  <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="d-flex flex-grow-1">
-          <span class="w-100 d-lg-none d-block">
-            <!-- hidden spacer to center brand on mobile -->
-          </span>
-          <a class="navbar-brand" href="index.html">
-              
-          </a>
-          <div class="w-100 text-right">
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
-                  <span class="navbar-toggler-icon"></span>
-              </button>
-          </div>
-      </div>
-      <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
-          <ul class="navbar-nav ml-auto flex-nowrap">
-              <li class="nav-item">
-                  <a href="#" class="nav-link active">Biography</a>
-              </li>
-              <li class="nav-item">
-                  <a href="projects.html" class="nav-link">Projects</a>
-              </li>
-              <li class="nav-item">
-                  <a href="misc/MKB Ashan.pdf" class="nav-link" target="_blank">Resume</a>
-              </li>
-          </ul>
-      </div>
-    </nav>
-</header>
   <body>
-    <!-- header line -->
-    
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="d-flex flex-grow-1">
+          <span class="w-100 d-lg-none d-block"></span>
+          <a class="navbar-brand" href="index.html"></a>
+          <div class="w-100 text-right">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar" aria-controls="myNavbar" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          </div>
+        </div>
+        <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
+          <ul class="navbar-nav ml-auto flex-nowrap align-items-lg-center">
+            <li class="nav-item">
+              <a href="index.html" class="nav-link active">Biography</a>
+            </li>
+            <li class="nav-item">
+              <a href="projects.html" class="nav-link">Projects</a>
+            </li>
+            <li class="nav-item">
+              <a href="misc/MKB Ashan.pdf" class="nav-link" target="_blank" rel="noopener noreferrer">Resume</a>
+            </li>
+            <li class="nav-item ml-lg-2">
+              <button id="themeToggle" class="btn btn-sm theme-toggle" type="button">Light mode</button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
     <div class="container">
       <main class="row">
         <div class="col-md-4">
-         <br>
-         
-           <img src="img/Profile/BuddhiAshan-profile.jpeg" class="card-img-top" alt="mkba" style="border-radius: 10px; height: 400px; object-fit: cover;"/>
-          
-           <br>
-           <br>
-           
-           <div class="bg">
+          <br />
+          <img
+            src="img/Profile/BuddhiAshan-profile.jpeg"
+            class="card-img-top"
+            alt="Portrait of Buddhi Ashan"
+            style="border-radius: 10px; height: 400px; object-fit: cover"
+          />
+          <br />
+          <br />
+
+          <div class="bg">
             <h1>Buddhi Ashan</h1>
             <h4>Mallika Kankanamalage</h4>
           </div>
-          <br>
-          <p>Postdoctoral Researcher <br>
-            <a href="https://www.utsa.edu/">The University of Texas at San Antonio</a>
+          <br />
+          <p>
+            Postdoctoral Researcher<br />
+            <a href="https://www.utsa.edu/" target="_blank" rel="noopener noreferrer">The University of Texas at San Antonio</a>
           </p>
-          <p>Pronouns: He/ Him/ His</p>
-         <p>
-            <div >
-              <!-- <img src="img/Profile/outlook_logo.png" class="uotlook" alt="">  -->
-             <a href="mailto:buddhiashan.mallikakankanamalage1@utsa.edu"  class="text-wrap emdisable"> buddhiashan.mallikakankanamalage@utsa.edu</a>
-           </div>
-        </p>
-        <p>
-          <div class="div_top"> 
-            <a href="misc/MKB Ashan.pdf" target="_blank">Resume</a> 
-              <!-- <img src="img/pdf.png" class="pdf" alt=""> -->
-           
-          </div> 
-        </p>
-        <p>
+
+          <div>
+            <a href="mailto:buddhiashan.mallikakankanamalage@utsa.edu" class="text-wrap">buddhiashan.mallikakankanamalage@utsa.edu</a>
+          </div>
+
           <div class="div_top">
-           <a href="https://www.linkedin.com/in/buddhiashan" target="_blank" class="logo"> <img src="img/Profile/Linkedin.png" class="linkedin" alt=""> </a>
-           <a href="https://scholar.google.com/citations?user=xYSm9AUAAAAJ&hl=en" target="_blank" class="logo"> <img src="img/Profile/Google_Scholar_logo.png" class="scholar" alt="no_img"> </a>
-           <a href="https://orcid.org/0009-0000-9961-4384" target="_blank" class="logo"> <img src="img/Profile/orcid_logo.svg" class="scholar" alt=""> </a>
-         </div>
-       </p>
-      
-   
-  
+            <a href="misc/MKB Ashan.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+          </div>
+
+          <div class="div_top icon-strip">
+            <a href="https://www.linkedin.com/in/buddhiashan" target="_blank" rel="noopener noreferrer" class="logo">
+              <img src="img/Profile/Linkedin.png" class="linkedin" alt="LinkedIn" />
+            </a>
+            <a href="https://scholar.google.com/citations?user=xYSm9AUAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer" class="logo">
+              <img src="img/Profile/Google_Scholar_logo.png" class="scholar" alt="Google Scholar" />
+            </a>
+            <a href="https://orcid.org/0009-0000-9961-4384" target="_blank" rel="noopener noreferrer" class="logo">
+              <img src="img/Profile/orcid_logo.svg" class="scholar" alt="ORCID" />
+            </a>
+          </div>
         </div>
-        
-        <div class="col-md-8" class="info">
+
+        <div class="col-md-8 info">
           <aside>
             <h2>Biography</h2>
-          <p class="bio">
-          I am a Postdoctoral Researcher at the University of Texas, San Antonio, specializing in geometric intersection and approximate nearest neighbor similarity search within expansive geospatial polygonal datasets. Proficient in parallel and distributed computing, high-performance computing, GPU programming, and spatiotemporal data processing, my research focuses on exploiting parallel computing in heterogeneous and distributed platforms to enhance the performance and scalability of polygonal operations. My expertise lies in architecting efficient data structures and algorithms for multi-core and many-core systems, contributing nuanced insights at the confluence of computer science and geospatial data, addressing intricacies in geometric computations on large datasets.
-          </p>
-          <br>
-          <h3 >Research Interests</h3>
-          <p>
+            <p class="bio">
+              I am a Postdoctoral Researcher at the University of Texas, San Antonio, specializing in geometric intersection and approximate nearest neighbor similarity search within expansive geospatial polygonal datasets. Proficient in parallel and distributed computing, high-performance computing, GPU programming, and spatiotemporal data processing, my research focuses on exploiting parallel computing in heterogeneous and distributed platforms to enhance the performance and scalability of polygonal operations. My expertise lies in architecting efficient data structures and algorithms for multi-core and many-core systems, contributing nuanced insights at the confluence of computer science and geospatial data, addressing intricacies in geometric computations on large datasets.
+            </p>
+            <br />
+
+            <h3>Research Interests</h3>
             <ul>
-            <li>Parallel and Distributed Computing</li>
-            <li>High Performance Computing</li>
-            <li>GPU Programming</li>
-            <li>Spatiotemporal data processing</li>
-          </ul>
-          </p>
-<br>
-          <h3>Education</h3>
-          <p>
-          <ul>
-            <li>
-              Doctor of Philosophy (Ph.D.) in Computer Science | Fall 2019 – Summer 2024 <br>
-              <a href="https://www.utsa.edu/">The University of Texas at San Antonio</a>
-              <p> <b>Dissertation : </b><i>Geometric intersection and approximate nearest neighbor similarity search over large geospatial polygonal datasets.</i>
-              <br>
-                <b>Advisor : </b><a href="http://www.cs.utsa.edu/~sprasad/" >Dr. Sushil K. Prasad</a>,
-                <b>Co-advisor : </b><a href="https://sites.mst.edu/puri/" >Dr. Satish Puri</a>
-              </p>
-            </li>
-            <li>
-              Master of Science (M.S.) in Computing and Information Science | Fall 2017 - Spring 2019 <br>
-              <a href="https://www.shsu.edu/">Sam Houston State University</a> 
-              <p><b>Project :</b> <i>Performance evaluation of transfer learning for pornographic detection.</i></p>
-            </li>
-            <li>
-              Bachelor of Science (B.Sc.) (Special) in Computer Science | 2011 November - 2016 May  <br>
-              <a href="https://www.kln.ac.lk/">University of Kelaniya</a>, Sri Lanka 
-              <p><b>Dissertation :</b> <i>Recognition of vehicle license plates using MATLAB.</i> </p>
-            </li>
-          </ul>
-        </p>
-      <br>
-          <h3>Work Experience</h3>
-          <p>
-          <ul>
-            <li>
-              <p>Postdoctoral Fellow | Oct. 2024 - Onwards <br>
-              <a href="https://sciences.utsa.edu/computer-science/">Department of Computer Science</a> | <a href="https://scooterlab.utsa.edu/">ScooterLab</a> <br>
-              <a href="https://www.utsa.edu/">The University of Texas at San
-              Antonio</a>
-            </p>
-            </li>
-            <li>
-              <p>Graduate Teaching | Research Assistant | Fall 2019 - Summer 2024 <br>
-              <a href="https://sciences.utsa.edu/computer-science/">Department of Computer Science</a> <br>
-              <a href="https://www.utsa.edu/">The University of Texas at San
-              Antonio</a>
-            </p>
-            </li>
-            <li>
-              <p>
-              Graduate Assistant | Fall 2017 – Spring 2019 <br>
-              <a href="https://cs.shsu.edu/">Department of Computer Science</a> <br>
-              <a href="https://www.shsu.edu/">Sam Houston State University</a>
-            </p>
-            </li>
-            <li>
-              <p>
-              Temporary Lecturer | March 2017 – August 2017 <br>
-              <a href="https://fct.kln.ac.lk/dep/dse/">Department of Software Engineering</a> <br>
-              <a href="https://www.kln.ac.lk/">University of Kelaniya</a>
-            </p>
-            </li>
-            <li>
-              <p>
-              Temporary Demonstrator | February 2016 – February 2017 <br>
-              <a href="https://science.kln.ac.lk/depts/stcs/">Department of Statistics and Computer Science</a> <br>
-              <a href="https://www.kln.ac.lk/">University of Kelaniya</a>
-            </p>
-            </li>
-          </ul>
-        </p>
-        <br>
-          <h3>Publications</h3>
-          <p>
-          <ul>
-             <li>  
-              <p>
-                Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad. <i>“Quad tree-based polygon encoding for shape-based similarity over large datasets of exponential area variations.” 2025 IEEE International Conference on Big Data (BigData). IEEE, 2025. <b> (Accepted. Acceptance rate 18.7%.). </b>
-              </p>
-            </li>  
-            <li>
-              <p>
-                Khan, U., Wijewickrama, R., Ashan, M. K. Buddhi, Sakib, A. H. M., Trinh, K., Duthie, C., Najafian, N., ... & Jadliwala, M. (2025). <i><a href="https://ieeexplore.ieee.org/abstract/document/11038542">"ScooterLab: A Programmable and Participatory Sensing Research Testbed using Micromobility Vehicles.</a>"</i> 2025 IEEE International Conference on Pervasive Computing and Communications Workshops and other Affiliated Events (PerCom Workshops) (pp. 555-557). IEEE Computer Society.
-              </p>
-            </li>
-            <li>
-              <p>Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad. <i>“<a href="https://dl.acm.org/doi/abs/10.1145/3673038.3673141">Extending segment tree for polygon clipping and parallelizing using OpenMP and OpenACC compiler directives.</a>”</i> 53rd International Conference on Parallel Processing (ICPP). 2024 </b>
-          
-              </p>
-            </li>
-            <li>
-              <p>Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad. <i>"<a href="https://ieeexplore.ieee.org/abstract/document/10171568">Efficient PRAM and Practical GPU Algorithms for Large Polygon Clipping with Degenerate Cases.</a>"</i> 2023 IEEE/ACM 23rd International Symposium on Cluster, Cloud and Internet Computing (CCGrid). IEEE,2023<b> (Acceptance rate 21%. Best paper finalist). </b>
-                <img src="img/Profile/badge1.png" class="badge-img" alt="badge1" />
-                <img src="img/Profile/badge2.png" class="badge-img" alt="badge2" />
-          
-              </p>
-            </li>
-            <li>
-              <p>
-                Ashan, M. K. Buddhi, Hyuk Cho, and Qingzhong Liu. <i>"<a href="https://link.springer.com/chapter/10.1007/978-3-030-32591-6_43">Performance evaluation of transfer learning for pornographic detection.</a>"</i> Advances in Natural Computation, Fuzzy Systems and Knowledge Discovery: Volume 2. Springer International Publishing, 2020. 
-              </p>
-            </li>
-            <li>
-             <p>
-              Ashan, M. K. Buddhi, and N. G. J. Dias. <i>"<a href="https://www.researchgate.net/profile/N-G-J-Dias/publication/310457959_RECOGNITION_OF_VEHICLE_LICENSE_PLATES_USING_MATLAB/links/582dd41908ae102f072daf08/RECOGNITION-OF-VEHICLE-LICENSE-PLATES-USING-MATLAB.pdf">Recognition of Vehicle License Plates using MATLAB.</a>"</i> European International Journal of Science and Technology 5.6, 2016.
-              </p>
-            </li>
-          </ul>
-        </p>
+              <li>Parallel and Distributed Computing</li>
+              <li>High Performance Computing</li>
+              <li>GPU Programming</li>
+              <li>Spatiotemporal data processing</li>
+            </ul>
+            <br />
+
+            <h3>Education</h3>
+            <ul>
+              <li>
+                Doctor of Philosophy (Ph.D.) in Computer Science | Fall 2019 - Summer 2024<br />
+                <a href="https://www.utsa.edu/" target="_blank" rel="noopener noreferrer">The University of Texas at San Antonio</a>
+                <p>
+                  <b>Dissertation:</b>
+                  <i><a href="https://hdl.handle.net/20.500.12588/6695" target="_blank" rel="noopener noreferrer">Geometric intersection and approximate nearest neighbor similarity search over large geospatial polygonal datasets.</i></a><br />
+                  <b>Advisor:</b> <a href="http://www.cs.utsa.edu/~sprasad/" target="_blank" rel="noopener noreferrer">Dr. Sushil K. Prasad</a>,
+                  <b>Co-advisor:</b> <a href="https://sites.mst.edu/puri/" target="_blank" rel="noopener noreferrer">Dr. Satish Puri</a>
+                </p>
+              </li>
+              <li>
+                Master of Science (M.S.) in Computing and Information Science | Fall 2017 - Spring 2019<br />
+                <a href="https://www.shsu.edu/" target="_blank" rel="noopener noreferrer">Sam Houston State University</a>
+                <p><b>Project:</b> <i><a href="https://link.springer.com/chapter/10.1007/978-3-030-32591-6_43" target="_blank" rel="noopener noreferrer">Performance evaluation of transfer learning for pornographic detection.</i></a></p>
+              </li>
+              <li>
+                Bachelor of Science (B.Sc.) (Special) in Computer Science | November 2011 - May 2016<br />
+                <a href="https://www.kln.ac.lk/" target="_blank" rel="noopener noreferrer">University of Kelaniya</a>, Sri Lanka
+                <p><b>Dissertation:</b> <i><a href="https://eijst.org.uk/files/images/frontimages/gallery/vol._5_no._6/10._91-101.pdf" target="_blank" rel="noopener noreferrer">Recognition of vehicle license plates using MATLAB.</i></a></p>
+              </li>
+            </ul>
+            <br />
+
+            <h3>Work Experience</h3>
+            <ul>
+              <li>
+                <p>
+                  Postdoctoral Fellow | Oct. 2024 - Present<br />
+                  <a href="https://sciences.utsa.edu/computer-science/" target="_blank" rel="noopener noreferrer">Department of Computer Science</a>
+                  |
+                  <a href="https://scooterlab.utsa.edu/" target="_blank" rel="noopener noreferrer">ScooterLab</a><br />
+                  <a href="https://www.utsa.edu/" target="_blank" rel="noopener noreferrer">The University of Texas at San Antonio</a>
+                </p>
+              </li>
+              <li>
+                <p>
+                  Graduate Teaching | Research Assistant | Fall 2019 - Summer 2024<br />
+                  <a href="https://sciences.utsa.edu/computer-science/" target="_blank" rel="noopener noreferrer">Department of Computer Science</a><br />
+                  <a href="https://www.utsa.edu/" target="_blank" rel="noopener noreferrer">The University of Texas at San Antonio</a>
+                </p>
+              </li>
+              <li>
+                <p>
+                  Graduate Assistant | Fall 2017 - Spring 2019<br />
+                  <a href="https://cs.shsu.edu/" target="_blank" rel="noopener noreferrer">Department of Computer Science</a><br />
+                  <a href="https://www.shsu.edu/" target="_blank" rel="noopener noreferrer">Sam Houston State University</a>
+                </p>
+              </li>
+              <li>
+                <p>
+                  Temporary Lecturer | March 2017 - August 2017<br />
+                  <a href="https://fct.kln.ac.lk/dep/dse/" target="_blank" rel="noopener noreferrer">Department of Software Engineering</a><br />
+                  <a href="https://www.kln.ac.lk/" target="_blank" rel="noopener noreferrer">University of Kelaniya</a>
+                </p>
+              </li>
+              <li>
+                <p>
+                  Temporary Demonstrator | February 2016 - February 2017<br />
+                  <a href="https://science.kln.ac.lk/depts/stcs/" target="_blank" rel="noopener noreferrer">Department of Statistics and Computer Science</a><br />
+                  <a href="https://www.kln.ac.lk/" target="_blank" rel="noopener noreferrer">University of Kelaniya</a>
+                </p>
+              </li>
+            </ul>
+            <br />
+
+            <h3>Publications</h3>
+            <ul>
+              <li>
+                <p>
+                  Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad. <a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=11401899" target="_blank" rel="noopener noreferrer">"Quad tree-based polygon encoding for shape-based similarity over large datasets of exponential area variations."</a> 2025 IEEE International Conference on Big Data (BigData). IEEE, 2025. <b>(Acceptance rate 18.7%.)</b>
+                </p>
+              </li>
+              <li>
+                <p>
+                  Khan, U., Wijewickrama, R., Ashan, M. K. Buddhi, Sakib, A. H. M., Trinh, K., Duthie, C., Najafian, N., ... &amp; Jadliwala, M. (2025).
+                  <i><a href="https://ieeexplore.ieee.org/abstract/document/11038542" target="_blank" rel="noopener noreferrer">"ScooterLab: A Programmable and Participatory Sensing Research Testbed using Micromobility Vehicles."</a></i>
+                  2025 IEEE International Conference on Pervasive Computing and Communications Workshops and other Affiliated Events (PerCom Workshops) (pp. 555-557). IEEE Computer Society.
+                </p>
+              </li>
+              <li>
+                <p>
+                  Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad.
+                  <i><a href="https://dl.acm.org/doi/abs/10.1145/3673038.3673141" target="_blank" rel="noopener noreferrer">"Extending segment tree for polygon clipping and parallelizing using OpenMP and OpenACC compiler directives."</a></i>
+                  53rd International Conference on Parallel Processing (ICPP). 2024.
+                </p>
+              </li>
+              <li>
+                <p>
+                  Ashan, M. K. Buddhi, Satish Puri, and Sushil K. Prasad.
+                  <i><a href="https://ieeexplore.ieee.org/abstract/document/10171568" target="_blank" rel="noopener noreferrer">"Efficient PRAM and Practical GPU Algorithms for Large Polygon Clipping with Degenerate Cases."</a></i>
+                  2023 IEEE/ACM 23rd International Symposium on Cluster, Cloud and Internet Computing (CCGrid). IEEE, 2023.
+                  <b>(Acceptance rate 21%. Best paper finalist.)</b>
+                  <img src="img/Profile/badge1.png" class="badge-img" alt="Best paper finalist badge" />
+                  <img src="img/Profile/badge2.png" class="badge-img" alt="Conference badge" />
+                </p>
+              </li>
+              <li>
+                <p>
+                  Ashan, M. K. Buddhi, Hyuk Cho, and Qingzhong Liu.
+                  <i><a href="https://link.springer.com/chapter/10.1007/978-3-030-32591-6_43" target="_blank" rel="noopener noreferrer">"Performance evaluation of transfer learning for pornographic detection."</a></i>
+                  Advances in Natural Computation, Fuzzy Systems and Knowledge Discovery: Volume 2. Springer International Publishing, 2020.
+                </p>
+              </li>
+              <li>
+                <p>
+                  Ashan, M. K. Buddhi, and N. G. J. Dias.
+                  <i><a href="https://www.researchgate.net/profile/N-G-J-Dias/publication/310457959_RECOGNITION_OF_VEHICLE_LICENSE_PLATES_USING_MATLAB/links/582dd41908ae102f072daf08/RECOGNITION-OF-VEHICLE-LICENSE-PLATES-USING-MATLAB.pdf" target="_blank" rel="noopener noreferrer">"Recognition of Vehicle License Plates using MATLAB."</a></i>
+                  European International Journal of Science and Technology 5.6, 2016.
+                </p>
+              </li>
+            </ul>
           </aside>
         </div>
       </main>
     </div>
-<br>
-<br>
+
+    <br />
+    <br />
     <footer class="py-5">
       <div class="container">
-      <p class="m-0 text-center text-black-50">
-      Copyright © Buddhi Ashan 2025 November
-      <br><br>
-      </p>
+        <p class="m-0 text-center footer-text">Copyright &copy; Buddhi Ashan</p>
       </div>
-      </footer>
+    </footer>
 
-    <!-- Link to jQuery and Bootstrap JS -->
-    <script defer src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/theme.js"></script>
   </body>
 </html>

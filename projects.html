@@ -2,205 +2,162 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Research projects by Buddhi Ashan MK including polygon clipping, approximate nearest neighbor similarity search, and ScooterLab."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-   
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-    />
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <link rel="stylesheet" href="styles/projects.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&amp;display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles/theme.css" />
+    <link rel="stylesheet" href="styles/projects.css" />
     <link rel="stylesheet" href="styles/nav.css" />
     <title>Projects | Buddhi Ashan MK</title>
   </head>
   <body>
     <header>
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="d-flex flex-grow-1">
-      <span class="w-100 d-lg-none d-block">
-        <!-- hidden spacer to center brand on mobile -->
-      </span>
-      <a class="navbar-brand" href="index.html">
-          
-      </a>
-      <div class="w-100 text-right">
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="d-flex flex-grow-1">
+          <span class="w-100 d-lg-none d-block"></span>
+          <a class="navbar-brand" href="index.html"></a>
+          <div class="w-100 text-right">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar" aria-controls="myNavbar" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
-          </button>
-      </div>
-  </div>
-  <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
-      <ul class="navbar-nav ml-auto flex-nowrap">
-          <li class="nav-item">
-              <a href="index.html" class="nav-link" >Biography</a>
-          </li>
-          <li class="nav-item">
-              <a href="projects.html" class="nav-link active">Projects</a>
-          </li>
-          <li class="nav-item">
-              <a href="misc/MKB Ashan.pdf" class="nav-link" target="_blank">Resume</a>
-          </li>
-      </ul>
-  </div>
-</nav>
-</header>
-<div class="container mt-4">
-    <h2>Projects</h2>
-   
-      <div class="row">
-        <!-- <div class="col-md-4 mb-4"> -->
-          <div class="card" style="width: 100%">
-            <h3 class="card-title">Efficient PRAM and Practical GPU Algorithms for Large Polygon Clipping with Degenerate Cases</h3>
-            <hr>
-            <div class="card-img">
-            <img src="img/projects/degen_example.png" class="card-img-0" alt="degen_example" />
-            </div>
-            <div class="card-body">
-              
-              <p class="card-text">
-                Polygonal geometric operations are fundamental in
-                domains such as Computer Graphics, Computer-Aided Design,
-                and Geographic Information Systems. Handling degenerate cases in such operations is important when real-world spatial data are used. The popular Greiner-Hormann (GH) clipping algorithm does not handle such cases properly without perturbing vertices leading to inaccuracies and ambiguities. In this work, we parallelize the O(n<sup>2</sup> )-time general polygon clipping algorithm by Foster et al. which can handle degenerate cases without perturbation. Our CREW PRAM algorithm can perform clipping in O(log n) time using n + k number of processors with simple polygons, where n is the number of input edges and k is the number of edge intersections. For efficient GPU
-                implementation, we employ three effective filters which have not been used in prior work on polygon clipping: 1) Commonminimum-bounding-rectangle filter, 2) Count-based filter, and 3) Line-segment-minimum-bounding-rectangle filter. They drastically reduce O(n<sup>2</sup> ) candidate edge pairs comparisons by 80%- 99%, leading to significantly faster parallel execution. In our experiments, C++ CUDA-based implementation yields up to 40X speedup over real-world datasets, processing two polygons with a total of 174K vertices on an Nvidia Quadro RTX 5000 GPU compared to the sequential Foster’s algorithm running on an Intel Xeon Silver 4210R CPU.
-
-              </p>
-              <a href="https://ieeexplore.ieee.org/abstract/document/10171568" class="btn btn-primary" target="_blank">Go to Paper</a>
-            </div>
+            </button>
           </div>
         </div>
+        <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
+          <ul class="navbar-nav ml-auto flex-nowrap align-items-lg-center">
+            <li class="nav-item">
+              <a href="index.html" class="nav-link">Biography</a>
+            </li>
+            <li class="nav-item">
+              <a href="projects.html" class="nav-link active">Projects</a>
+            </li>
+            <li class="nav-item">
+              <a href="misc/MKB Ashan.pdf" class="nav-link" target="_blank" rel="noopener noreferrer">Resume</a>
+            </li>
+            <li class="nav-item ml-lg-2">
+              <button id="themeToggle" class="btn btn-sm theme-toggle" type="button">Light mode</button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
 
-        <div class="row">
-          <!-- <div class="col-md-4 mb-4"> -->
-            <div class="card" style="width: 100%">
-              <h3 class="card-title">Extending segment tree for polygon clipping and parallelizing using OpenMP and OpenACC compiler
-                directives</h3>
-              <hr>
-              <div class="card-img">
-              <img src="img/projects/oneedgeNpolycoverlistuprighttree.png" class="card-img-1" alt="..." />
-              </div>
-              <div class="card-body">
-               
-                <p class="card-text">
-                  <ul>
-                  <li>The first work to extend a segment tree data structure for polygon clipping leveraging Chaselle’s rules.</li>
-                  <li>Parallelized segment tree construction including augmented data structures and line segment
-                  intersection finding using OpenMP directives.</li>
-                  <li>Presented a performance analysis including parallel kernel offloading using OpenACC.</li>
-                </ul>
-  
-                </p>
-                <a href="https://dl.acm.org/doi/abs/10.1145/3673038.3673141" class="btn btn-primary" target="_blank">Go to Paper</a>
-              </div>
-            </div> 
+    <div class="container mt-4">
+      <h2>Projects</h2>
 
-        <div class="row">
-          <!-- <div class="col-md-4 mb-4"> -->
-            <div class="card" style="width: 100%">
-              <h3 class="card-title">Approximate Nearest Neighbor Similarity Search for Large Polygonal and Trajectory Datasets</h3>
-              <hr>
-            <div class="card-img">
-              <img src="img/projects/similarshape.png" class="card-img-2" alt="Shpae-based similarity search" />
-            </div>
-              <div class="card-body">
-                
-                <p class="card-text">
-                  <ul>                  
-                    <li> Developed uniform grid-based and quad tree-based polygon encoding techniques to encode a polygon into a feature vector.</li>
-                  <li>Presented a workflow leveraging Jaccard distance to find similar shapes from a large reference
-                  dataset employing a HNSW graph for fast searching. Python was used for implementations.</li>
-                </ul>
-
-                </p>
-                <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2313039&HistoricalAwards=false" class="btn btn-primary" target="_blank">NSF Award #2313039</a>
-                <!-- <a href="#" class="btn btn-primary" target="_blank">Go to Paper</a> -->
-                <a href="https://rrpress.utsa.edu/items/f3f6d842-4371-4e33-9c29-9669968ce15a" class="btn btn-primary" target="_blank">Go to Poster</a>
-              </div>
-            </div>
-  
+      <div class="row">
+        <div class="card" style="width: 100%">
+          <h3 class="card-title">Efficient PRAM and Practical GPU Algorithms for Large Polygon Clipping with Degenerate Cases</h3>
+          <hr />
+          <div class="card-img">
+            <img src="img/projects/degen_example.png" class="card-img-0" alt="Degenerate polygon clipping example" />
           </div>
+          <div class="card-body">
+            <p class="card-text">
+              Polygonal geometric operations are fundamental in domains such as Computer Graphics, Computer-Aided Design, and Geographic Information Systems. Handling degenerate cases in such operations is important when real-world spatial data are used. The popular Greiner-Hormann (GH) clipping algorithm does not handle such cases properly without perturbing vertices leading to inaccuracies and ambiguities. In this work, we parallelize the O(n<sup>2</sup>)-time general polygon clipping algorithm by Foster et al. which can handle degenerate cases without perturbation. Our CREW PRAM algorithm can perform clipping in O(log n) time using n + k number of processors with simple polygons, where n is the number of input edges and k is the number of edge intersections. For efficient GPU implementation, we employ three effective filters which have not been used in prior work on polygon clipping: 1) Common minimum-bounding-rectangle filter, 2) Count-based filter, and 3) Line-segment minimum-bounding-rectangle filter. They drastically reduce O(n<sup>2</sup>) candidate edge pairs comparisons by 80%-99%, leading to significantly faster parallel execution. In our experiments, C++ CUDA-based implementation yields up to 40X speedup over real-world datasets, processing two polygons with a total of 174K vertices on an Nvidia Quadro RTX 5000 GPU compared to the sequential Foster's algorithm running on an Intel Xeon Silver 4210R CPU.
+            </p>
+            <a href="https://ieeexplore.ieee.org/abstract/document/10171568" class="btn btn-primary" target="_blank" rel="noopener noreferrer">2023 CCGRID paper</a>
+          </div>
+        </div>
+      </div>
 
-          <div class="row">
-            <!-- <div class="col-md-4 mb-4"> -->
-              <div class="card" style="width: 100%">
-                <h3 class="card-title">ScooterLab - A Programmable and Participatory Sensing Testbed using Micromobility Vehicles</h3>
-                <hr>
-                <div class="card-img">
-                <img src="img/projects/ScooterLab_icon.jpeg" class="card-img-top" alt="..." />
-              </div>
-                <div class="card-body">
-                  
-                  <p class="card-text">
-                  <ul>
-                    <li> Developed a Map tool employing an ArcGIS base map to visualize scooter trip trajectories and their sensor data using JavaScript.</li>
-                    <li> Designed and contributed to develop a PHP backend application to manage researchers and experiments using Laravel framework.</li>
-                  </ul>
-    
-                  </p>
-                  <a href="https://scooterlab.utsa.edu/" class="btn btn-primary" target="_blank">Go to Scooter Lab</a>
-                  <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2234516" class="btn btn-primary" target="_blank">NSF Award #2234516</a>
-                  <a href="https://ieeexplore.ieee.org/abstract/document/11038542" class="btn btn-primary" target="_blank">Go to Paper</a>
-                </div>
-              </div>
-            </div>
+      <div class="row">
+        <div class="card" style="width: 100%">
+          <h3 class="card-title">Extending segment tree for polygon clipping and parallelizing using OpenMP and OpenACC compiler directives</h3>
+          <hr />
+          <div class="card-img">
+            <img src="img/projects/oneedgeNpolycoverlistuprighttree.png" class="card-img-1" alt="Segment tree structure visualization" />
+          </div>
+          <div class="card-body">
+            <ul class="card-text">
+              <li>The first work to extend a segment tree data structure for polygon clipping leveraging Chaselle's rules.</li>
+              <li>Parallelized segment tree construction including augmented data structures and line segment intersection finding using OpenMP directives.</li>
+              <li>Presented a performance analysis including parallel kernel offloading using OpenACC.</li>
+            </ul>
+            <a href="https://dl.acm.org/doi/abs/10.1145/3673038.3673141" class="btn btn-primary" target="_blank" rel="noopener noreferrer">ICPP 2024 paper</a>
+          </div>
+        </div>
+      </div>
 
-            <div class="row">
-              <!-- <div class="col-md-4 mb-4"> -->
-                <div class="card" style="width: 100%">
-                  <h3 class="card-title">CS6253: Survey-based Term Project</h3>
-                  <hr>
-                  <div class="card-img">
-                  <img src="img/projects/Project.jpeg" class="card-img-top" alt="..." />
-                </div>
-                  <div class="card-body">
-                   
-                    <p class="card-text">
-                      Spatial and spatiotemporal data models and operations are the building blocks of spatial analysis. Geospatial analysis algorithms are compute-intensive and large volumes of such data make this task more challenging. Traditional databases cannot handle these operations and high volumes of data efficiently. Polygon is a basic data model used in this research landscape. This study focuses on efficient parallel data structures and algorithms that are used to store and manipulate polygonal data in geospatial analysis. This work presents data structures specialized for efficient processing with spatial and spatiotemporal data, serial and parallel algorithms that are used for polygon clipping over spatial data and range queries over spatiotemporal data.
-      
-                    </p>
-                    <a href="https://buddhi1.github.io/cs6253/" class="btn btn-primary" target="_blank">Go to Project</a>
-                  </div>
-                </div>
-              </div>
-  
-   
+      <div class="row">
+        <div class="card" style="width: 100%">
+          <h3 class="card-title">Approximate Nearest Neighbor Similarity Search for Large Polygonal and Trajectory Datasets</h3>
+          <hr />
+          <div class="card-img">
+            <img src="img/projects/similarshape.png" class="card-img-2" alt="Shape similarity search example" />
+          </div>
+          <div class="card-body">
+            <ul class="card-text">
+              <li>Developed uniform grid-based and quad tree-based polygon encoding techniques to encode a polygon into a feature vector.</li>
+              <li>Presented a workflow leveraging Jaccard distance to find similar shapes from a large reference dataset employing a HNSW graph for fast searching. Python was used for implementations.</li>
+            </ul>
+            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2313039&amp;HistoricalAwards=false" class="btn btn-primary" target="_blank" rel="noopener noreferrer">NSF Award #2313039</a>
+            <a href="https://rrpress.utsa.edu/items/f3f6d842-4371-4e33-9c29-9669968ce15a" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Go to Poster</a>
+            <a href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=11401899" class="btn btn-primary" target="_blank" rel="noopener noreferrer">IEEE Big data 2025 paper</a>
+            <a href="https://www.computer.org/csdl/video-library/video/2dOyJ2fTnyM" class="btn btn-primary" target="_blank" rel="noopener noreferrer">IEEE Big data 2025 presentation</a>
+          </div>
+        </div>
+      </div>
 
-        <!-- Repeat the above card structure as needed -->
+      <div class="row">
+        <div class="card" style="width: 100%">
+          <h3 class="card-title">ScooterLab - A Programmable and Participatory Sensing Testbed using Micromobility Vehicles</h3>
+          <hr />
+          <div class="card-img">
+            <img src="img/projects/ScooterLab_icon.jpeg" class="card-img-top" alt="ScooterLab logo" />
+          </div>
+          <div class="card-body">
+            <ul class="card-text">
+              <li>Developed a map tool employing an ArcGIS base map to visualize scooter trip trajectories and their sensor data using JavaScript.</li>
+              <li>Designed and contributed to develop a PHP backend application to manage researchers and experiments using Laravel framework.</li>
+            </ul>
+            <a href="https://scooterlab.utsa.edu/" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Go to Scooter Lab</a>
+            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2234516" class="btn btn-primary" target="_blank" rel="noopener noreferrer">NSF Award #2234516</a>
+            <a href="https://ieeexplore.ieee.org/abstract/document/11038542" class="btn btn-primary" target="_blank" rel="noopener noreferrer">PerCom 2025 Paper</a>
+            <a href="https://hdl.handle.net/20.500.12588/7651" class="btn btn-primary" target="_blank" rel="noopener noreferrer">ScooterLab workshop 2025</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="card" style="width: 100%">
+          <h3 class="card-title">CS6253: Survey-based Term Project</h3>
+          <hr />
+          <div class="card-img">
+            <img src="img/projects/Project.jpeg" class="card-img-top" alt="Survey project preview" />
+          </div>
+          <div class="card-body">
+            <p class="card-text">
+              Spatial and spatiotemporal data models and operations are the building blocks of spatial analysis. Geospatial analysis algorithms are compute-intensive and large volumes of such data make this task more challenging. Traditional databases cannot handle these operations and high volumes of data efficiently. Polygon is a basic data model used in this research landscape. This study focuses on efficient parallel data structures and algorithms that are used to store and manipulate polygonal data in geospatial analysis. This work presents data structures specialized for efficient processing with spatial and spatiotemporal data, serial and parallel algorithms that are used for polygon clipping over spatial data and range queries over spatiotemporal data.
+            </p>
+            <a href="https://buddhi1.github.io/cs6253/" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Go to Project</a>
+          </div>
+        </div>
       </div>
     </div>
 
     <footer class="py-5">
       <div class="container">
-      <p class="m-0 text-center text-black-50">
-      Copyright © Buddhi Ashan 2025 November
-      <br><br>
-      </p>
+        <p class="m-0 text-center footer-text">Copyright &copy; Buddhi Ashan</p>
       </div>
-      </footer>
+    </footer>
 
-    <!-- Link to jQuery and Bootstrap JS -->
-    <script
-      defer
-      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
-    
-
-<!-- Bootstrap JS and Popper.js (required for Bootstrap 5) -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXRr8bSrPJz8F+ua9EB4JTQ2JQ8FEXPh4u" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-oCgHoE5JhQnWz1x1maW46BhsZDQ5/Q+PODmNB8FExl/8TUC2H3oc/gZZJ8cBhmSI" crossorigin="anonymous"></script>
-
-
-
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/theme.js"></script>
   </body>
 </html>
