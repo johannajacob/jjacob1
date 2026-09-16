@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Research · Buddhi Ashan</title>
+    <meta name="description" content="Research of Buddhi Ashan Mallika Kankanamalage: exact parallel polygon clipping on GPUs and with segment trees, ShapeToVec quadtree encodings for billion-scale shape similarity search, and the ScooterLab testbed." />
+    <link rel="canonical" href="https://buddhi1.github.io/bashan/research.html" />
+    <link rel="icon" href="img/Profile/title.ico" type="image/x-icon" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles/site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">Buddhi Ashan</a>
+        <nav class="nav" aria-label="Primary">
+          <button class="icon-btn nav-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <ul id="site-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="research.html" aria-current="page">Research</a></li>
+            <li><a href="publications.html">Publications</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="teaching.html">Teaching</a></li>
+            <li><a href="misc/MKB Ashan.pdf" target="_blank" rel="noopener noreferrer">CV</a></li>
+          </ul>
+          <span class="nav-divider" aria-hidden="true"></span>
+          <button class="icon-btn theme-toggle" type="button" aria-label="Switch to dark mode">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="page-head" style="max-width: 760px;">
+        <h1>Research</h1>
+        <p class="hook">Spatial data is irregular. Parallel hardware is not.</p>
+        <p class="lede">
+          Segment trees, quadtrees, and R-trees were built for one processor and one memory. On GPUs and clusters they lose the properties that made them fast. Real data makes it worse. Degenerate inputs are common, and most parallel codes avoid them by augmenting the input and accepting a slightly wrong answer. I redesign these structures for parallel hardware.
+        </p>
+        <div class="stats" aria-label="Key results">
+          <div class="stat"><span class="v">O(log n)</span><span class="l">PRAM clipping time, no perturbation</span></div>
+          <div class="stat"><span class="v">99%</span><span class="l">edge pairs eliminated by the segment tree</span></div>
+          <div class="stat"><span class="v">1.7 M → 1.05 B</span><span class="l">polygons searched, 2025 → 2026</span></div>
+          <div class="stat"><span class="v">13 TB → 181 GB</span><span class="l">index for a billion polygons</span></div>
+        </div>
+      </section>
+
+      <!-- ============ Exact computation ============ -->
+      <section class="research-section" id="exact" aria-labelledby="exact-heading">
+        <h2 id="exact-heading">Exact parallel computation on geometry</h2>
+        <div class="research-text">
+          <p>
+            Polygon clipping computes the intersection of two polygons. It sits under map overlay, CAD, and graphics. Standard algorithms are sequential and quadratic in the number of edges. They also fail on <em>degenerate</em> cases, where a vertex of one polygon lies exactly on an edge of the other. Real GIS data is full of these. The usual fix is to move vertices until the case disappears, whic changes the answer.
+          </p>
+          <p>
+            I developed the first parallel clipping algorithm that handles every degenerate case without perturbation. In the PRAM model it runs in logarithmic time. For the GPU, I added three cheap geometric filters based on minimum bounding rectangles and intersection counts. They discard 80–99% of candidate edge pairs before any costly intersection test. The CUDA implementation reaches 40× speedup over the sequential baseline on real-world data (CCGrid 2023, best paper finalist).
+          </p>
+          <p>
+            Next, I attacked the same problem structurally. Segment trees are the classic tool for line-segment queries, but no implementation, CGAL included, supported intersection finding or polygon clipping. At ICPP 2024 I presented the first such extension. It builds on Chazelle’s augmentation, and I parallelized the tree construction with OpenMP. The augmented tree eliminates 99% of non-intersecting edge pairs, against 63% for the best prior filter. That is enough for a single CPU core to beat the state-of-the-art GPU implementation. Offloading the kernels with OpenACC matches the earlier CUDA baseline, and profiling shows a native CUDA version has clear headroom.
+          </p>
+        </div>
+
+        <div class="fig-grid">
+          <figure class="figure">
+            <div class="fig"><img src="img/projects/degen_example.png" alt="Three examples of degenerate polygon intersections where vertices lie on edges" loading="lazy" /></div>
+            <figcaption>Degenerate cases: a vertex of one polygon lies exactly on an edge of the other. Both algorithms handle such case without perturbation.</figcaption>
+          </figure>
+          <figure class="figure">
+            <div class="fig"><img src="img/projects/oneedgeNpolycoverlistuprighttree.png" alt="Line segments and a polygon with their related segment trees" loading="lazy" /></div>
+            <figcaption>Line segments and their segment tree (ICPP 2024, Fig. 3). Leaf intervals come from the segments' x-coordinates. Each segment is stored at the highest nodes it covers.</figcaption>
+          </figure>
+        </div>
+
+        <div class="anim-grid">
+        <div class="card anim" id="anim-cmbr">
+          <div class="anim-head">
+            <h3>How the common MBR (CMBR) filter prunes polygon clipping</h3>
+            <p>Only edges that touch the rectangle shared by both polygons can intersect. The rest are dropped before any exact test. Click a step to hold that frame.</p>
+          </div>
+          <div class="anim-stage">
+            <svg viewBox="8 8 244 220" role="img" aria-label="Animation: two overlapping polygons, their bounding rectangles, the common rectangle, edges outside it fading away, and the clipped polygon">
+            <g class="st1"><polygon class="fill-accent-soft" points="20,70 90,20 170,45 185,120 120,175 45,160" fill-opacity="0.7" stroke="none"></polygon><polygon class="fill-warm-soft" points="120,60 215,50 240,120 210,200 130,215 95,150" fill-opacity="0.7" stroke="none"></polygon></g>
+            <g class="st1" stroke-width="2" fill="none" stroke-linejoin="round"><polygon class="ink-accent" points="20,70 90,20 170,45 185,120 120,175 45,160"></polygon><polygon class="ink-warm" points="120,60 215,50 240,120 210,200 130,215 95,150"></polygon></g>
+            <g class="st2" fill="none" stroke-width="1" stroke-dasharray="4 3"><rect class="ink-accent" x="20" y="20" width="165" height="155"></rect><rect class="ink-warm" x="95" y="50" width="145" height="165"></rect></g>
+            <g class="st3"><rect class="fill-ink ink" x="95" y="50" width="90" height="125" fill-opacity="0.07" stroke-width="1.2"></rect></g>
+            <g class="st4" stroke-width="2.8" stroke-linecap="round"><line class="ink-accent" x1="170" y1="45" x2="185" y2="120"></line><line class="ink-accent" x1="185" y1="120" x2="120" y2="175"></line><line class="ink-accent" x1="120" y1="175" x2="45" y2="160"></line><line class="ink-warm" x1="120" y1="60" x2="215" y2="50"></line><line class="ink-warm" x1="130" y1="215" x2="95" y2="150"></line><line class="ink-warm" x1="95" y1="150" x2="120" y2="60"></line></g>
+            <g class="drop dropped" stroke-width="2.8" stroke-linecap="round"><line  x1="20" y1="70" x2="90" y2="20"></line><line  x1="90" y1="20" x2="170" y2="45"></line><line  x1="45" y1="160" x2="20" y2="70"></line><line  x1="215" y1="50" x2="240" y2="120"></line><line  x1="240" y1="120" x2="210" y2="200"></line><line  x1="210" y1="200" x2="130" y2="215"></line></g>
+          </svg>
+            <ol class="anim-steps">
+              <li><button type="button" class="anim-step cp1" data-t="0.8"><span class="n">1</span><span>Two polygons — 36 edge pairs to test</span></button></li>
+              <li><button type="button" class="anim-step cp2" data-t="2.2"><span class="n">2</span><span>Minimum bounding rectangle (MBR) of each polygon</span></button></li>
+              <li><button type="button" class="anim-step cp3" data-t="3.8"><span class="n">3</span><span>Their common MBR</span></button></li>
+              <li><button type="button" class="anim-step cp4" data-t="5.8"><span class="n">4</span><span>Edges outside it are dropped: 36 → 9 candidate pairs, handed to the next filter</span></button></li>
+            </ol>
+          </div>
+          <div class="anim-controls">
+            <button type="button" class="btn anim-play">Pause</button>
+            <button type="button" class="btn anim-replay">Replay</button>
+            <span class="hint">10-second loop</span>
+          </div>
+        </div>
+
+        <div class="card anim" id="anim-lsmbr">
+          <div class="anim-head">
+            <h3>How the line-segment MBR (LSMBR) filter prunes the rest</h3>
+            <p>Each surviving edge gets its own bounding rectangle. Only pairs whose rectangles overlap are tested exactly. Click a step to hold that frame.</p>
+          </div>
+          <div class="anim-stage">
+            <svg viewBox="8 8 244 220" role="img" aria-label="Animation: the candidate edges after the common MBR filter, the bounding rectangle of each edge, the overlaps between them, and the intersections found by testing only the overlapping pairs">
+            <g class="st1"><polygon class="fill-accent-soft" points="20,70 90,20 170,45 185,120 120,175 45,160" fill-opacity="0.35" stroke="none"></polygon><polygon class="fill-warm-soft" points="120,60 215,50 240,120 210,200 130,215 95,150" fill-opacity="0.35" stroke="none"></polygon><rect class="ink" x="95" y="50" width="90" height="125" fill="none" stroke-width="1" stroke-opacity="0.35"></rect></g>
+            <g class="st1"><line class="ink-accent" x1="170" y1="45" x2="185" y2="120" stroke-width="2.8" stroke-linecap="round"></line><line class="ink-accent" x1="185" y1="120" x2="120" y2="175" stroke-width="2.8" stroke-linecap="round"></line><line class="ink-accent" x1="120" y1="175" x2="45" y2="160" stroke-width="2.8" stroke-linecap="round"></line><line class="ink-warm" x1="120" y1="60" x2="215" y2="50" stroke-width="2.8" stroke-linecap="round"></line><line class="ink-warm" x1="130" y1="215" x2="95" y2="150" stroke-width="2.8" stroke-linecap="round"></line><line class="ink-warm" x1="95" y1="150" x2="120" y2="60" stroke-width="2.8" stroke-linecap="round"></line></g>
+            <g class="st2dim" fill="none" stroke-width="1" stroke-dasharray="3 3"><rect class="ink-accent" x="170" y="45" width="15" height="75" ></rect><rect class="ink-accent" x="120" y="120" width="65" height="55" ></rect><rect class="ink-accent" x="45" y="160" width="75" height="15" ></rect><rect class="ink-warm" x="120" y="50" width="95" height="10" ></rect><rect class="ink-warm" x="95" y="150" width="35" height="65" ></rect><rect class="ink-warm" x="95" y="60" width="25" height="90" ></rect></g>
+            <g class="st3"><rect class="fill-ink ink" x="170" y="50" width="15" height="10" fill-opacity="0.16" stroke-width="1.2"></rect><rect class="fill-ink ink" x="120" y="150" width="10" height="25" fill-opacity="0.16" stroke-width="1.2"></rect><rect class="fill-ink ink" x="119" y="120" width="2" height="30" fill-opacity="0.16" stroke-width="1.2"></rect><rect class="fill-ink ink" x="95" y="160" width="25" height="15" fill-opacity="0.16" stroke-width="1.2"></rect></g>
+            <g class="st5"><polygon class="fill-accent ink-accent" points="120.0,60.0 95.0,150.0 107.1,172.4 120.0,175.0 185.0,120.0 171.9,54.5" fill-opacity="0.35" stroke-width="1.5" stroke-linejoin="round"></polygon><circle class="fill-bg ink" cx="107.1" cy="172.4" r="4.5" stroke-width="2"></circle><circle class="fill-bg ink" cx="171.9" cy="54.5" r="4.5" stroke-width="2"></circle></g>
+          </svg>
+            <ol class="anim-steps">
+              <li><button type="button" class="anim-step cp1" data-t="0.8"><span class="n">1</span><span>The 9 candidate pairs left by the CMBR filter</span></button></li>
+              <li><button type="button" class="anim-step cp2" data-t="2.2"><span class="n">2</span><span>Minimum bounding rectangle of each edge</span></button></li>
+              <li><button type="button" class="anim-step cp3" data-t="3.8"><span class="n">3</span><span>Where a P rectangle overlaps a Q rectangle</span></button></li>
+              <li><button type="button" class="anim-step cp4" data-t="5.8"><span class="n">4</span><span>Pairs with disjoint rectangles are skipped: 9 → 4 exact tests</span></button></li>
+              <li><button type="button" class="anim-step cp5" data-t="8.0"><span class="n">5</span><span>Intersections found; the clipped polygon assembled</span></button></li>
+            </ol>
+          </div>
+          <div class="anim-controls">
+            <button type="button" class="btn anim-play">Pause</button>
+            <button type="button" class="btn anim-replay">Replay</button>
+            <span class="hint">10-second loop</span>
+          </div>
+        </div>
+        </div>
+
+        <div class="links">
+          <a href="https://ieeexplore.ieee.org/abstract/document/10171568" target="_blank" rel="noopener noreferrer">CCGrid 2023 paper</a>
+          <a href="https://dl.acm.org/doi/abs/10.1145/3673038.3673141" target="_blank" rel="noopener noreferrer">ICPP 2024 paper</a>
+          <a href="https://github.com/buddhi1/GH-CUDA" target="_blank" rel="noopener noreferrer">Code: GH-CUDA</a>
+          <a href="https://github.com/buddhi1/segment-tree-based-clipping" target="_blank" rel="noopener noreferrer">Code: segment-tree-based-clipping</a>
+        </div>
+      </section>
+
+      <!-- ============ Encoding for search ============ -->
+      <section class="research-section" id="encoding" aria-labelledby="encoding-heading">
+        <h2 id="encoding-heading">Encoding geometry for billion-scale search</h2>
+        <div class="research-text">
+          <p>
+            How can we answer the following query: <em>find the shapes in this dataset that look like this one.</em> A brute force answer may intersect the query with every candidate in the database and rank them based on theyr Jaccard score. However, approximate nearest-neighbor (ANN) search is the practical alternative, but it needs feature vectors that preserve shape. A uniform grid is unable to preseve the shape properties over a polygonal dataset of exponential area variations. Real polygon collections vary in area by orders of magnitude, so one grid is too coarse for the small shapes and too fine for the large ones.
+          </p>
+          <p>
+            <strong>ShapeToVec</strong> encodes each polygon on a quadtree grid that refines only where the boundary passes. That keeps both shape and area across the whole size range. The right similarity measure for shapes is weighted Jaccard, the ratio of intersection area to union area, not Euclidean distance. I implemented it natively inside the HNSW index in NMSLIB. The system reaches 97% recall on top-50 queries over 1.7 million polygons. It is the first system to run shape-based Jaccard search at this scale (IEEE BigData 2025).
+          </p>
+          <p>
+            Now, recall is not the limit, memory is. <strong>ShapeToVec+</strong> (ACM SIGSPATIAL 2026) separates area from the stored signature. The signature keeps only cell occupancy. A small look-up table supplies the true cell areas at query time. This gives 4× compression with 8-bit integers and 8× to 32× with bit encodings, with the metric intact. A product quantizer built for weighted Jaccard (under review) pushes the same line to 1.05 billion polygons on one commodity server.
+          </p>
+        </div>
+
+        <div class="fig-grid">
+          <figure class="figure">
+            <div class="fig"><img src="img/research/shapetovec-overview.png" alt="ShapeToVec pipeline: input datasets, grid construction, polygon encoding, HNSW index" loading="lazy" /></div>
+            <figcaption>ShapeToVec (IEEE BigData 2025).</figcaption>
+          </figure>
+          <figure class="figure">
+            <div class="fig"><img src="img/research/shapetovecplus-overview.png" alt="ShapeToVec+ pipeline: polygon centering and quadtree generation feed a cell-area look-up table and compact signatures, then an HNSW index with SIMD weighted-Jaccard distance" loading="lazy" /></div>
+            <figcaption>ShapeToVec+ (ACM SIGSPATIAL 2026).</figcaption>
+          </figure>
+        </div>
+
+        <div class="anim-grid">
+        <div class="card anim" id="anim-uniform">
+          <div class="anim-head">
+            <h3>Why a uniform grid fails</h3>
+            <p>One resolution cannot serve shapes whose areas differ by orders of magnitude. Click a step to hold that frame.</p>
+          </div>
+          <div class="anim-stage">
+            <svg viewBox="-4 -4 248 290" role="img" aria-label="Animation: the same polygon on a coarse uniform grid loses its boundary, a fine uniform grid needs nine times more cells, and a small polygon collapses to a single cell">
+            <g class="st1"><polygon class="fill-accent-soft ink-accent" points="30.0,120.0 55.0,45.0 120.0,25.0 185.0,40.0 215.0,110.0 200.0,180.0 140.0,222.0 70.0,215.0 35.0,175.0" stroke-width="2" stroke-linejoin="round"></polygon></g>
+            <g class="st2 grid-line" stroke-width="1"><line class="" x1="0.0" y1="0" x2="0.0" y2="240"></line><line class="" x1="0" y1="0.0" x2="240" y2="0.0"></line><line class="" x1="40.0" y1="0" x2="40.0" y2="240"></line><line class="" x1="0" y1="40.0" x2="240" y2="40.0"></line><line class="" x1="80.0" y1="0" x2="80.0" y2="240"></line><line class="" x1="0" y1="80.0" x2="240" y2="80.0"></line><line class="" x1="120.0" y1="0" x2="120.0" y2="240"></line><line class="" x1="0" y1="120.0" x2="240" y2="120.0"></line><line class="" x1="160.0" y1="0" x2="160.0" y2="240"></line><line class="" x1="0" y1="160.0" x2="240" y2="160.0"></line><line class="" x1="200.0" y1="0" x2="200.0" y2="240"></line><line class="" x1="0" y1="200.0" x2="240" y2="200.0"></line><line class="" x1="240.0" y1="0" x2="240.0" y2="240"></line><line class="" x1="0" y1="240.0" x2="240" y2="240.0"></line></g>
+            <g class="st3only"><g class="fill-accent" fill-opacity="0.45" stroke="none"><rect class="" x="40.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="200.0" width="40.0" height="40.0"></rect></g><g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.00s)"><rect x="0.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="3.3" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.03s)"><rect x="7.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="10.0" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.06s)"><rect x="13.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="16.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.09s)"><rect x="20.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="23.3" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.12s)"><rect x="27.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="30.0" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.15s)"><rect x="33.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="36.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.18s)"><rect x="40.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="43.3" y="273">0</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.21s)"><rect x="47.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="50.0" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.24s)"><rect x="53.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="56.7" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.27s)"><rect x="60.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="63.3" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.30s)"><rect x="67.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="70.0" y="273">1</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.33s)"><rect x="73.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="76.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.36s)"><rect x="80.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="83.3" y="273">0</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.39s)"><rect x="87.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="90.0" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.42s)"><rect x="93.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="96.7" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.45s)"><rect x="100.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="103.3" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.48s)"><rect x="107.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="110.0" y="273">1</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.51s)"><rect x="113.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="116.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.54s)"><rect x="120.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="123.3" y="273">0</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.57s)"><rect x="127.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="130.0" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.60s)"><rect x="133.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="136.7" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.63s)"><rect x="140.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="143.3" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.66s)"><rect x="147.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="150.0" y="273">1</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.69s)"><rect x="153.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="156.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.72s)"><rect x="160.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="163.3" y="273">0</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.75s)"><rect x="167.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="170.0" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.78s)"><rect x="173.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="176.7" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.81s)"><rect x="180.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="183.3" y="273">1</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.84s)"><rect x="187.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="190.0" y="273">1</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.87s)"><rect x="193.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="196.7" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.90s)"><rect x="200.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="203.3" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.93s)"><rect x="207.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="210.0" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 0.96s)"><rect x="213.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="216.7" y="273">0</text></g><g class="bit bit-1 b3" style="animation-delay: calc(var(--seek) + 0.99s)"><rect x="220.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="223.3" y="273">1</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 1.02s)"><rect x="227.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="230.0" y="273">0</text></g><g class="bit bit-0 b3" style="animation-delay: calc(var(--seek) + 1.05s)"><rect x="233.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="236.7" y="273">0</text></g></g></g>
+            <g class="st4only"><g class="grid-line-2" stroke-width="0.6"><line class="" x1="0.0" y1="0" x2="0.0" y2="240"></line><line class="" x1="0" y1="0.0" x2="240" y2="0.0"></line><line class="" x1="13.3" y1="0" x2="13.3" y2="240"></line><line class="" x1="0" y1="13.3" x2="240" y2="13.3"></line><line class="" x1="26.7" y1="0" x2="26.7" y2="240"></line><line class="" x1="0" y1="26.7" x2="240" y2="26.7"></line><line class="" x1="40.0" y1="0" x2="40.0" y2="240"></line><line class="" x1="0" y1="40.0" x2="240" y2="40.0"></line><line class="" x1="53.3" y1="0" x2="53.3" y2="240"></line><line class="" x1="0" y1="53.3" x2="240" y2="53.3"></line><line class="" x1="66.7" y1="0" x2="66.7" y2="240"></line><line class="" x1="0" y1="66.7" x2="240" y2="66.7"></line><line class="" x1="80.0" y1="0" x2="80.0" y2="240"></line><line class="" x1="0" y1="80.0" x2="240" y2="80.0"></line><line class="" x1="93.3" y1="0" x2="93.3" y2="240"></line><line class="" x1="0" y1="93.3" x2="240" y2="93.3"></line><line class="" x1="106.7" y1="0" x2="106.7" y2="240"></line><line class="" x1="0" y1="106.7" x2="240" y2="106.7"></line><line class="" x1="120.0" y1="0" x2="120.0" y2="240"></line><line class="" x1="0" y1="120.0" x2="240" y2="120.0"></line><line class="" x1="133.3" y1="0" x2="133.3" y2="240"></line><line class="" x1="0" y1="133.3" x2="240" y2="133.3"></line><line class="" x1="146.7" y1="0" x2="146.7" y2="240"></line><line class="" x1="0" y1="146.7" x2="240" y2="146.7"></line><line class="" x1="160.0" y1="0" x2="160.0" y2="240"></line><line class="" x1="0" y1="160.0" x2="240" y2="160.0"></line><line class="" x1="173.3" y1="0" x2="173.3" y2="240"></line><line class="" x1="0" y1="173.3" x2="240" y2="173.3"></line><line class="" x1="186.7" y1="0" x2="186.7" y2="240"></line><line class="" x1="0" y1="186.7" x2="240" y2="186.7"></line><line class="" x1="200.0" y1="0" x2="200.0" y2="240"></line><line class="" x1="0" y1="200.0" x2="240" y2="200.0"></line><line class="" x1="213.3" y1="0" x2="213.3" y2="240"></line><line class="" x1="0" y1="213.3" x2="240" y2="213.3"></line><line class="" x1="226.7" y1="0" x2="226.7" y2="240"></line><line class="" x1="0" y1="226.7" x2="240" y2="226.7"></line><line class="" x1="240.0" y1="0" x2="240.0" y2="240"></line><line class="" x1="0" y1="240.0" x2="240" y2="240.0"></line></g><g class="fill-accent" fill-opacity="0.45" stroke="none"><rect class="" x="93.3" y="26.7" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="26.7" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="26.7" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="26.7" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="26.7" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="40.0" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="53.3" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="66.7" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="80.0" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="200.0" y="93.3" width="13.3" height="13.3"></rect><rect class="" x="26.7" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="200.0" y="106.7" width="13.3" height="13.3"></rect><rect class="" x="26.7" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="200.0" y="120.0" width="13.3" height="13.3"></rect><rect class="" x="26.7" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="200.0" y="133.3" width="13.3" height="13.3"></rect><rect class="" x="26.7" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="146.7" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="160.0" width="13.3" height="13.3"></rect><rect class="" x="40.0" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="186.7" y="173.3" width="13.3" height="13.3"></rect><rect class="" x="53.3" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="160.0" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="173.3" y="186.7" width="13.3" height="13.3"></rect><rect class="" x="66.7" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="80.0" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="93.3" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="106.7" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="146.7" y="200.0" width="13.3" height="13.3"></rect><rect class="" x="120.0" y="213.3" width="13.3" height="13.3"></rect><rect class="" x="133.3" y="213.3" width="13.3" height="13.3"></rect></g><g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.00s)"><rect x="0.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="4.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.03s)"><rect x="8.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="12.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.06s)"><rect x="16.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="20.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.09s)"><rect x="24.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="28.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.12s)"><rect x="32.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="36.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.15s)"><rect x="40.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="44.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.18s)"><rect x="48.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="52.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.21s)"><rect x="56.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="60.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.24s)"><rect x="64.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="68.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.27s)"><rect x="72.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="76.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.30s)"><rect x="80.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="84.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.33s)"><rect x="88.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="92.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.36s)"><rect x="96.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="100.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.39s)"><rect x="104.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="108.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.42s)"><rect x="112.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="116.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.45s)"><rect x="120.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="124.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.48s)"><rect x="128.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="132.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.51s)"><rect x="136.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="140.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.54s)"><rect x="144.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="148.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.57s)"><rect x="152.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="156.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.60s)"><rect x="160.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="164.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.63s)"><rect x="168.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="172.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.66s)"><rect x="176.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="180.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.69s)"><rect x="184.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="188.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.72s)"><rect x="192.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="196.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.75s)"><rect x="200.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="204.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.78s)"><rect x="208.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="212.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.81s)"><rect x="216.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="220.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.84s)"><rect x="224.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="228.0" y="273">0</text></g><g class="bit bit-0 b4" style="animation-delay: calc(var(--seek) + 0.87s)"><rect x="232.5" y="262" width="6.8" height="14" rx="1.5"></rect><text x="236.0" y="273">0</text></g></g><text class="bit-more" x="240" y="273" text-anchor="end">×9</text></g>
+            <g class="st1"><polygon class="ink-accent" points="30.0,120.0 55.0,45.0 120.0,25.0 185.0,40.0 215.0,110.0 200.0,180.0 140.0,222.0 70.0,215.0 35.0,175.0" fill="none" stroke-width="2" stroke-linejoin="round"></polygon></g>
+            <g class="st5"><g class="fill-accent" fill-opacity="0.18" stroke="none"><rect class="" x="40.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="40.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="80.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="120.0" width="40.0" height="40.0"></rect><rect class="" x="40.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="80.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="160.0" y="160.0" width="40.0" height="40.0"></rect><rect class="" x="120.0" y="200.0" width="40.0" height="40.0"></rect></g><rect class="fill-warm-soft ink-warm" x="0.0" y="200.0" width="40.0" height="40.0" stroke-width="1.5"></rect><polygon class="ink-warm" points="6.1,219.1 10.1,207.1 20.5,203.9 30.9,206.3 35.7,217.5 33.3,228.7 23.7,235.4 12.5,234.3 6.9,227.9" fill="none" stroke-width="1.8" stroke-linejoin="round"></polygon><g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.00s)"><rect x="0.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="3.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.03s)"><rect x="7.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="10.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.06s)"><rect x="13.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="16.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.09s)"><rect x="20.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="23.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.12s)"><rect x="27.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="30.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.15s)"><rect x="33.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="36.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.18s)"><rect x="40.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="43.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.21s)"><rect x="47.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="50.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.24s)"><rect x="53.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="56.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.27s)"><rect x="60.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="63.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.30s)"><rect x="67.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="70.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.33s)"><rect x="73.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="76.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.36s)"><rect x="80.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="83.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.39s)"><rect x="87.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="90.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.42s)"><rect x="93.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="96.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.45s)"><rect x="100.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="103.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.48s)"><rect x="107.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="110.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.51s)"><rect x="113.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="116.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.54s)"><rect x="120.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="123.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.57s)"><rect x="127.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="130.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.60s)"><rect x="133.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="136.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.63s)"><rect x="140.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="143.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.66s)"><rect x="147.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="150.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.69s)"><rect x="153.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="156.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.72s)"><rect x="160.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="163.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.75s)"><rect x="167.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="170.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.78s)"><rect x="173.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="176.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.81s)"><rect x="180.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="183.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.84s)"><rect x="187.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="190.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.87s)"><rect x="193.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="196.7" y="273">0</text></g><g class="bit bit-1 b5" style="animation-delay: calc(var(--seek) + 0.90s)"><rect x="200.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="203.3" y="273">1</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.93s)"><rect x="207.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="210.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.96s)"><rect x="213.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="216.7" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 0.99s)"><rect x="220.5" y="262" width="5.7" height="14" rx="1.5"></rect><text x="223.3" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 1.02s)"><rect x="227.2" y="262" width="5.7" height="14" rx="1.5"></rect><text x="230.0" y="273">0</text></g><g class="bit bit-0 b5" style="animation-delay: calc(var(--seek) + 1.05s)"><rect x="233.8" y="262" width="5.7" height="14" rx="1.5"></rect><text x="236.7" y="273">0</text></g></g></g>
+          </svg>
+            <ol class="anim-steps">
+              <li><button type="button" class="anim-step cp1" data-t="0.8"><span class="n">1</span><span>Input polygon, centered at the origin</span></button></li>
+              <li><button type="button" class="anim-step cp2" data-t="2.2"><span class="n">2</span><span>A coarse uniform grid</span></button></li>
+              <li><button type="button" class="anim-step cp3" data-t="3.8"><span class="n">3</span><span>Cell occupancy: the boundary detail is gone. 36 bits</span></button></li>
+              <li><button type="button" class="anim-step cp4" data-t="5.8"><span class="n">4</span><span>A finer grid keeps the boundary but needs 9× more bits for every polygon</span></button></li>
+              <li><button type="button" class="anim-step cp5" data-t="8.0"><span class="n">5</span><span>A small polygon on the coarse grid collapses to one cell; its shape is lost</span></button></li>
+            </ol>
+          </div>
+          <div class="anim-controls">
+            <button type="button" class="btn anim-play">Pause</button>
+            <button type="button" class="btn anim-replay">Replay</button>
+            <span class="hint">10-second loop</span>
+          </div>
+        </div>
+        <div class="card anim" id="anim-quadtree">
+          <div class="anim-head">
+            <h3>How ShapeToVec encodes it instead</h3>
+            <p>Grid cells refine only where the boundary passes. Cell occupancy becomes the feature vector. Click a step to hold that frame.</p>
+          </div>
+          <div class="anim-stage">
+            <svg viewBox="-4 -4 248 290" role="img" aria-label="Animation: a polygon is overlaid with a grid, boundary cells subdivide into a quadtree, covered cells fill in, and the leaves flatten into a bit vector">
+            <g class="st1"><polygon class="fill-accent-soft ink-accent" points="30,120 55,45 120,25 185,40 215,110 200,180 140,222 70,215 35,175" stroke-width="2" stroke-linejoin="round"></polygon></g>
+            <g class="st2 grid-line" fill="none" stroke-width="1"><rect  x="80" y="40" width="40" height="40" ></rect>
+<rect  x="120" y="40" width="40" height="40" ></rect>
+<rect  x="80" y="80" width="40" height="40" ></rect>
+<rect  x="120" y="80" width="40" height="40" ></rect>
+<rect  x="160" y="80" width="40" height="40" ></rect>
+<rect  x="40" y="120" width="40" height="40" ></rect>
+<rect  x="80" y="120" width="40" height="40" ></rect>
+<rect  x="120" y="120" width="40" height="40" ></rect>
+<rect  x="160" y="120" width="40" height="40" ></rect>
+<rect  x="80" y="160" width="40" height="40" ></rect>
+<rect  x="120" y="160" width="40" height="40" ></rect>
+<rect  x="0" y="0" width="40" height="40" ></rect>
+<rect  x="200" y="0" width="40" height="40" ></rect>
+<rect  x="0" y="40" width="40" height="40" ></rect>
+<rect  x="0" y="200" width="40" height="40" ></rect>
+<rect  x="200" y="200" width="40" height="40" ></rect>
+<rect  x="40" y="0" width="40" height="40" ></rect>
+<rect  x="80" y="0" width="40" height="40" ></rect>
+<rect  x="120" y="0" width="40" height="40" ></rect>
+<rect  x="160" y="0" width="40" height="40" ></rect>
+<rect  x="40" y="40" width="40" height="40" ></rect>
+<rect  x="160" y="40" width="40" height="40" ></rect>
+<rect  x="200" y="40" width="40" height="40" ></rect>
+<rect  x="0" y="80" width="40" height="40" ></rect>
+<rect  x="40" y="80" width="40" height="40" ></rect>
+<rect  x="200" y="80" width="40" height="40" ></rect>
+<rect  x="0" y="120" width="40" height="40" ></rect>
+<rect  x="200" y="120" width="40" height="40" ></rect>
+<rect  x="0" y="160" width="40" height="40" ></rect>
+<rect  x="40" y="160" width="40" height="40" ></rect>
+<rect  x="160" y="160" width="40" height="40" ></rect>
+<rect  x="200" y="160" width="40" height="40" ></rect>
+<rect  x="40" y="200" width="40" height="40" ></rect>
+<rect  x="80" y="200" width="40" height="40" ></rect>
+<rect  x="120" y="200" width="40" height="40" ></rect>
+<rect  x="160" y="200" width="40" height="40" ></rect></g>
+            <g class="st3 grid-line-2" stroke-width="1"><g ><line x1="60" y1="0" x2="60" y2="40"></line><line x1="40" y1="20" x2="80" y2="20"></line></g>
+<g ><line x1="100" y1="0" x2="100" y2="40"></line><line x1="80" y1="20" x2="120" y2="20"></line></g>
+<g ><line x1="140" y1="0" x2="140" y2="40"></line><line x1="120" y1="20" x2="160" y2="20"></line></g>
+<g ><line x1="180" y1="0" x2="180" y2="40"></line><line x1="160" y1="20" x2="200" y2="20"></line></g>
+<g ><line x1="60" y1="40" x2="60" y2="80"></line><line x1="40" y1="60" x2="80" y2="60"></line></g>
+<g ><line x1="180" y1="40" x2="180" y2="80"></line><line x1="160" y1="60" x2="200" y2="60"></line></g>
+<g ><line x1="220" y1="40" x2="220" y2="80"></line><line x1="200" y1="60" x2="240" y2="60"></line></g>
+<g ><line x1="20" y1="80" x2="20" y2="120"></line><line x1="0" y1="100" x2="40" y2="100"></line></g>
+<g ><line x1="60" y1="80" x2="60" y2="120"></line><line x1="40" y1="100" x2="80" y2="100"></line></g>
+<g ><line x1="220" y1="80" x2="220" y2="120"></line><line x1="200" y1="100" x2="240" y2="100"></line></g>
+<g ><line x1="20" y1="120" x2="20" y2="160"></line><line x1="0" y1="140" x2="40" y2="140"></line></g>
+<g ><line x1="220" y1="120" x2="220" y2="160"></line><line x1="200" y1="140" x2="240" y2="140"></line></g>
+<g ><line x1="20" y1="160" x2="20" y2="200"></line><line x1="0" y1="180" x2="40" y2="180"></line></g>
+<g ><line x1="60" y1="160" x2="60" y2="200"></line><line x1="40" y1="180" x2="80" y2="180"></line></g>
+<g ><line x1="180" y1="160" x2="180" y2="200"></line><line x1="160" y1="180" x2="200" y2="180"></line></g>
+<g ><line x1="220" y1="160" x2="220" y2="200"></line><line x1="200" y1="180" x2="240" y2="180"></line></g>
+<g ><line x1="60" y1="200" x2="60" y2="240"></line><line x1="40" y1="220" x2="80" y2="220"></line></g>
+<g ><line x1="100" y1="200" x2="100" y2="240"></line><line x1="80" y1="220" x2="120" y2="220"></line></g>
+<g ><line x1="140" y1="200" x2="140" y2="240"></line><line x1="120" y1="220" x2="160" y2="220"></line></g>
+<g ><line x1="180" y1="200" x2="180" y2="240"></line><line x1="160" y1="220" x2="200" y2="220"></line></g></g>
+            <g class="st4 fill-accent" fill-opacity="0.55" stroke="none"><rect  x="80" y="40" width="40" height="40" ></rect>
+<rect  x="120" y="40" width="40" height="40" ></rect>
+<rect  x="80" y="80" width="40" height="40" ></rect>
+<rect  x="120" y="80" width="40" height="40" ></rect>
+<rect  x="160" y="80" width="40" height="40" ></rect>
+<rect  x="40" y="120" width="40" height="40" ></rect>
+<rect  x="80" y="120" width="40" height="40" ></rect>
+<rect  x="120" y="120" width="40" height="40" ></rect>
+<rect  x="160" y="120" width="40" height="40" ></rect>
+<rect  x="80" y="160" width="40" height="40" ></rect>
+<rect  x="120" y="160" width="40" height="40" ></rect></g>
+            <g class="st4 fill-accent" fill-opacity="0.32" stroke="none"><rect  x="100" y="20" width="20" height="20" ></rect>
+<rect  x="120" y="20" width="20" height="20" ></rect>
+<rect  x="60" y="40" width="20" height="20" ></rect>
+<rect  x="40" y="60" width="20" height="20" ></rect>
+<rect  x="60" y="60" width="20" height="20" ></rect>
+<rect  x="160" y="40" width="20" height="20" ></rect>
+<rect  x="160" y="60" width="20" height="20" ></rect>
+<rect  x="180" y="60" width="20" height="20" ></rect>
+<rect  x="40" y="80" width="20" height="20" ></rect>
+<rect  x="60" y="80" width="20" height="20" ></rect>
+<rect  x="40" y="100" width="20" height="20" ></rect>
+<rect  x="60" y="100" width="20" height="20" ></rect>
+<rect  x="200" y="100" width="20" height="20" ></rect>
+<rect  x="200" y="120" width="20" height="20" ></rect>
+<rect  x="40" y="160" width="20" height="20" ></rect>
+<rect  x="60" y="160" width="20" height="20" ></rect>
+<rect  x="40" y="180" width="20" height="20" ></rect>
+<rect  x="60" y="180" width="20" height="20" ></rect>
+<rect  x="160" y="160" width="20" height="20" ></rect>
+<rect  x="180" y="160" width="20" height="20" ></rect>
+<rect  x="160" y="180" width="20" height="20" ></rect>
+<rect  x="60" y="200" width="20" height="20" ></rect>
+<rect  x="80" y="200" width="20" height="20" ></rect>
+<rect  x="100" y="200" width="20" height="20" ></rect>
+<rect  x="120" y="200" width="20" height="20" ></rect>
+<rect  x="140" y="200" width="20" height="20" ></rect></g>
+            <g class="st1"><polygon class="ink-accent" points="30,120 55,45 120,25 185,40 215,110 200,180 140,222 70,215 35,175" fill="none" stroke-width="2" stroke-linejoin="round"></polygon></g>
+            <g class="st5"><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.000s)"><rect x="4.0" y="262" width="6.2" height="14" rx="1.5"></rect><text x="7.1" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.045s)"><rect x="11.3" y="262" width="6.2" height="14" rx="1.5"></rect><text x="14.4" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.090s)"><rect x="18.6" y="262" width="6.2" height="14" rx="1.5"></rect><text x="21.7" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.135s)"><rect x="25.9" y="262" width="6.2" height="14" rx="1.5"></rect><text x="29.0" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.180s)"><rect x="33.2" y="262" width="6.2" height="14" rx="1.5"></rect><text x="36.3" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.225s)"><rect x="40.5" y="262" width="6.2" height="14" rx="1.5"></rect><text x="43.6" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.270s)"><rect x="47.8" y="262" width="6.2" height="14" rx="1.5"></rect><text x="50.9" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.315s)"><rect x="55.1" y="262" width="6.2" height="14" rx="1.5"></rect><text x="58.2" y="273">0</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 0.360s)"><rect x="62.4" y="262" width="6.2" height="14" rx="1.5"></rect><text x="65.5" y="273">1</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.405s)"><rect x="69.7" y="262" width="6.2" height="14" rx="1.5"></rect><text x="72.8" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.450s)"><rect x="77.0" y="262" width="6.2" height="14" rx="1.5"></rect><text x="80.1" y="273">0</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 0.495s)"><rect x="84.3" y="262" width="6.2" height="14" rx="1.5"></rect><text x="87.4" y="273">1</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.540s)"><rect x="91.6" y="262" width="6.2" height="14" rx="1.5"></rect><text x="94.7" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.585s)"><rect x="98.9" y="262" width="6.2" height="14" rx="1.5"></rect><text x="102.0" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.630s)"><rect x="106.2" y="262" width="6.2" height="14" rx="1.5"></rect><text x="109.3" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.675s)"><rect x="113.5" y="262" width="6.2" height="14" rx="1.5"></rect><text x="116.6" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.720s)"><rect x="120.8" y="262" width="6.2" height="14" rx="1.5"></rect><text x="123.9" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.765s)"><rect x="128.1" y="262" width="6.2" height="14" rx="1.5"></rect><text x="131.2" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.810s)"><rect x="135.4" y="262" width="6.2" height="14" rx="1.5"></rect><text x="138.5" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 0.855s)"><rect x="142.7" y="262" width="6.2" height="14" rx="1.5"></rect><text x="145.8" y="273">0</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 0.900s)"><rect x="150.0" y="262" width="6.2" height="14" rx="1.5"></rect><text x="153.1" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 0.945s)"><rect x="157.3" y="262" width="6.2" height="14" rx="1.5"></rect><text x="160.4" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 0.990s)"><rect x="164.6" y="262" width="6.2" height="14" rx="1.5"></rect><text x="167.7" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 1.035s)"><rect x="171.9" y="262" width="6.2" height="14" rx="1.5"></rect><text x="175.0" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 1.080s)"><rect x="179.2" y="262" width="6.2" height="14" rx="1.5"></rect><text x="182.3" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 1.125s)"><rect x="186.5" y="262" width="6.2" height="14" rx="1.5"></rect><text x="189.6" y="273">1</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 1.170s)"><rect x="193.8" y="262" width="6.2" height="14" rx="1.5"></rect><text x="196.9" y="273">0</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 1.215s)"><rect x="201.1" y="262" width="6.2" height="14" rx="1.5"></rect><text x="204.2" y="273">1</text></g><g class="bit bit-1" style="animation-delay: calc(var(--seek) + 1.260s)"><rect x="208.4" y="262" width="6.2" height="14" rx="1.5"></rect><text x="211.5" y="273">1</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 1.305s)"><rect x="215.7" y="262" width="6.2" height="14" rx="1.5"></rect><text x="218.8" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 1.350s)"><rect x="223.0" y="262" width="6.2" height="14" rx="1.5"></rect><text x="226.1" y="273">0</text></g><g class="bit bit-0" style="animation-delay: calc(var(--seek) + 1.395s)"><rect x="230.3" y="262" width="6.2" height="14" rx="1.5"></rect><text x="233.4" y="273">0</text></g><text class="bit-more" x="240" y="273" text-anchor="end">…</text></g>
+          </svg>
+            <ol class="anim-steps">
+              <li><button type="button" class="anim-step cp1" data-t="0.8"><span class="n">1</span><span>Input polygon from a GIS dataset, centered at the origin</span></button></li>
+              <li><button type="button" class="anim-step cp2" data-t="2.2"><span class="n">2</span><span>Coarse uniform grid</span></button></li>
+              <li><button type="button" class="anim-step cp3" data-t="3.8"><span class="n">3</span><span>Boundary cells subdivide — a quadtree that follows the shape</span></button></li>
+              <li><button type="button" class="anim-step cp4" data-t="5.8"><span class="n">4</span><span>Cell occupancy: inside, partial, or empty</span></button></li>
+              <li><button type="button" class="anim-step cp5" data-t="8.0"><span class="n">5</span><span>Leaves flatten into a vector; weighted Jaccard compares two vectors</span></button></li>
+            </ol>
+          </div>
+          <div class="anim-controls">
+            <button type="button" class="btn anim-play">Pause</button>
+            <button type="button" class="btn anim-replay">Replay</button>
+            <span class="hint">10-second loop</span>
+          </div>
+        </div>
+
+        </div>
+
+        <div class="links">
+          <a href="https://ieeexplore.ieee.org/document/11401899" target="_blank" rel="noopener noreferrer">IEEE BigData 2025 paper</a>
+          <a href="https://doi.org/10.1145/3841645.3843377" target="_blank" rel="noopener noreferrer">ACM SIGSPATIAL 2026 paper</a>
+          <a href="https://github.com/buddhi1/shape-similarity" target="_blank" rel="noopener noreferrer">Code: shape-similarity</a>
+          <a href="https://doi.org/10.5281/zenodo.11522173" target="_blank" rel="noopener noreferrer">Benchmark dataset (1.3 TB)</a>
+          <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2313039&amp;HistoricalAwards=false" target="_blank" rel="noopener noreferrer">NSF #2313039</a>
+        </div>
+      </section>
+
+      <!-- ============ ScooterLab ============ -->
+      <section class="research-section" id="scooterlab" aria-labelledby="scooterlab-heading">
+        <h2 id="scooterlab-heading">Real workloads: ScooterLab</h2>
+        <div class="research-text">
+          <p>
+            ScooterLab is an NSF-funded testbed built on instrumented e-scooters. Since 2023 I have led its system development. My team built the Research Activities Management Portal (RAMP). It lets outside researchers manage experiments and visualize, filter, and download the fleet’s sensor data. My team is works on micromobility safety research leveraging the multimodal data ScooterLab collects.   
+          </p>
+        </div>
+        <div class="links">
+          <a href="https://scooterlab.utsa.edu/" target="_blank" rel="noopener noreferrer">scooterlab.utsa.edu</a>
+          <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2234516" target="_blank" rel="noopener noreferrer">NSF #2234516</a>
+          <a href="https://ieeexplore.ieee.org/abstract/document/11038542" target="_blank" rel="noopener noreferrer">PerCom 2025 demo paper</a>
+        </div>
+      </section>
+
+      <section class="card callout" aria-label="Looking ahead">
+        <span class="mono">Looking ahead</span>
+        <p>
+          The next questions are about metrics other than Jaccard, geometries other than polygons, and when a <em>learned</em> structure should replace a designed one. If you are a student who likes results you can measure, a filter that removes 99% of the work or an index that shrinks 70×, get in touch: <span class="email-inline">buddhiashan <span class="sep">[dot]</span> mallikakankanamalage <span class="sep">[at]</span> utsa <span class="sep">[dot]</span> edu</span>.
+        </p>
+      </section>
+    </main>
+
+    <button class="to-top" type="button" aria-label="Back to top" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+    </button>
+    <footer class="site-footer">© 2026 Buddhi Ashan Mallika Kankanamalage</footer>
+
+    <script src="scripts/site.js"></script>
+  </body>
+</html>
